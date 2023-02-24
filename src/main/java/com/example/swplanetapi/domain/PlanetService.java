@@ -1,7 +1,9 @@
 package com.example.swplanetapi.domain;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,5 +20,14 @@ public class PlanetService {
 
     public Optional<Planet> findById(Long id) {
         return planetRepository.findById(id);
+    }
+
+    public Optional<Planet> findByName(String nome) {
+        return planetRepository.findByName(nome);
+    }
+
+    public List<Planet> findAll(String terrain, String climate) {
+        Example<Planet> query = QueryBuilder.makeQuery(new Planet(climate, terrain));
+        return planetRepository.findAll(query);
     }
 }
