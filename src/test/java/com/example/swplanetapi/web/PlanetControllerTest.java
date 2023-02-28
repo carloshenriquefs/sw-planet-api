@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.example.swplanetapi.common.PlanetConstants;
 import com.example.swplanetapi.domain.Planet;
 import com.example.swplanetapi.domain.PlanetService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(PlanetController.class)
@@ -83,6 +82,23 @@ public class PlanetControllerTest {
     @Test
     public void getPlanet_ByUnexistingId_ReturnsNotFound() throws Exception {
         mockMvc.perform(get("/planets/1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getPlanet_ByExistingName_ReturnsPlanet() throws Exception {
+        when(planetService.findByName(PlanetConstants.PLANET.getName())).thenReturn(Optional.of(PlanetConstants.PLANET));
+
+        mockMvc
+            .perform(
+            get("/planets/name/" + PlanetConstants.PLANET.getName()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(PlanetConstants.PLANET));
+    }
+
+    @Test
+    public void getPlanet_ByUnextingName_ReturnsNotFound() throws Exception {
+        mockMvc.perform(get("/planets/name/1"))
                 .andExpect(status().isNotFound());
     }
 }
