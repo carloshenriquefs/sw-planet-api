@@ -3,7 +3,11 @@ package com.example.swplanetapi.web;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Optional;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.swplanetapi.common.PlanetConstants;
 import com.example.swplanetapi.domain.Planet;
-import com.example.swplanetapi.domain.PlanetRepository;
 import com.example.swplanetapi.domain.PlanetService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,5 +67,22 @@ public class PlanetControllerTest {
         mockMvc.perform(post("/planets").content(objectMapper.writeValueAsString(PlanetConstants.PLANET))
         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    public void getPlanet_ByExistingId_ReturnsPlanet() throws Exception {
+        when(planetService.findById(1L)).thenReturn(Optional.of(PlanetConstants.PLANET));
+
+        mockMvc
+            .perform(
+            get("/planets/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(PlanetConstants.PLANET));
+    }
+
+    @Test
+    public void getPlanet_ByUnexistingId_ReturnsNotFound() throws Exception {
+        mockMvc.perform(get("/planets/1"))
+                .andExpect(status().isNotFound());
     }
 }
