@@ -2,7 +2,10 @@ package com.example.swplanetapi.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.example.swplanetapi.common.PlanetConstants.PLANET;
+import static com.example.swplanetapi.common.PlanetConstants.TATOOINE;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
@@ -10,6 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Example;
+import org.springframework.test.context.jdbc.Sql;
 
 import com.example.swplanetapi.common.PlanetConstants;
 
@@ -24,7 +30,7 @@ public class PlanetRepositoryTest {
 
     @AfterEach
     public void afterEach() {
-        PlanetConstants.PLANET.setId(null);
+        PLANET.setId(null);
     }
 
     @Test
@@ -50,7 +56,7 @@ public class PlanetRepositoryTest {
 
     @Test
     public void createPlanet_WithExistingName_ThrowsException() {
-        Planet planet = testEntityManager.persistFlushFind(PlanetConstants.PLANET);
+        Planet planet = testEntityManager.persistFlushFind(PLANET);
         testEntityManager.detach(planet);
         planet.setId(null);
 
@@ -59,7 +65,7 @@ public class PlanetRepositoryTest {
 
     @Test
     public void getPlanet_ByExistingId_ReturnsPlanet() {
-        Planet planet = testEntityManager.persistFlushFind(PlanetConstants.PLANET);
+        Planet planet = testEntityManager.persistFlushFind(PLANET);
         Optional<Planet> planetOpt = planetRepository.findById(planet.getId());
 
         assertThat(planetOpt).isNotEmpty();
@@ -75,7 +81,7 @@ public class PlanetRepositoryTest {
 
     @Test
     public void getPlanet_ByExistingName_ReturnsPlanet() {
-        Planet planet = testEntityManager.persistFlushFind(PlanetConstants.PLANET);
+        Planet planet = testEntityManager.persistFlushFind(PLANET);
         Optional<Planet> planetOpt = planetRepository.findByName(planet.getName());
 
         assertThat(planetOpt).isNotEmpty();
@@ -84,9 +90,50 @@ public class PlanetRepositoryTest {
 
     @Test
     public void getPlanet_ByUnextingName_ReturnsNotFound() {
-        Optional<Planet> planet = planetRepository.findByName(PlanetConstants.PLANET.getName());
+        Optional<Planet> planet = planetRepository.findByName(PLANET.getName());
 
         assertThat(planet).isEmpty();
+    }
+
+/*     @Sql(scripts = "/import_planets.sql")
+    @Test
+    public void listPlanets_ReturnsFilteredPlanets() {
+      Example<Planet> queryWithoutFilters = QueryBuilder.makeQuery(new Planet());
+      Example<Planet> queryWithFilters = QueryBuilder.makeQuery(new Planet(TATOOINE.getClimate(), TATOOINE.getTerrain()));
+  
+      List<Planet> responseWithoutFilters = planetRepository.findAll(queryWithoutFilters);
+      List<Planet> responseWithFilters = planetRepository.findAll(queryWithFilters);
+  
+      assertThat(responseWithoutFilters).isNotEmpty();
+      assertThat(responseWithoutFilters).hasSize(3);
+      assertThat(responseWithFilters).isNotEmpty();
+      assertThat(responseWithFilters).hasSize(1);
+      assertThat(responseWithFilters.get(0)).isEqualTo(TATOOINE);
+    } */
+
+    @Test
+    public void getPlanets_ReturnsNoPlanets() {
+        Example<Planet> query = QueryBuilder.makeQuery(new Planet());
+
+        List<Planet> response = planetRepository.findAll(query);
+    
+        assertThat(response).isEmpty();
+    }
+
+    @Test
+    public void removePlanet_WithExistingId_RemovePlanetFromDatabase() {
+        Planet planet = testEntityManager.persistFlushFind(PLANET);
+
+        planetRepository.deleteById(planet.getId());
+
+        Planet removedPlanet = testEntityManager.find(Planet.class, planet.getId());
+        assertThat(removedPlanet).isNull();
+
+    }
+
+    @Test
+    public void removePlanet_WithUnexistingId_ThrowsException() {
+        assertThatThrownBy(() -> planetRepository.deleteById(1L)).isInstanceOf(EmptyResultDataAccessException.class);
     }
 
 }
