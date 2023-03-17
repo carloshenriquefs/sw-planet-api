@@ -22,38 +22,37 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/planets")
 public class PlanetController {
+  @Autowired
+  private PlanetService planetService;
 
-    @Autowired
-    private PlanetService planetService;
+  @PostMapping
+  public ResponseEntity<Planet> create(@RequestBody @Valid Planet planet) {
+    Planet planetCreated = planetService.create(planet);
+    return ResponseEntity.status(HttpStatus.CREATED).body(planetCreated);
+  }
 
-    @PostMapping
-    public ResponseEntity<Planet> create(@RequestBody @Valid Planet planet) {
-        Planet planetCreated = planetService.create(planet);
-        return ResponseEntity.status(HttpStatus.CREATED).body(planetCreated);
-    }
+  @GetMapping("/{id}")
+  public ResponseEntity<Planet> get(@PathVariable("id") Long id) {
+    return planetService.get(id).map(planet -> ResponseEntity.ok(planet))
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Planet> findById(@PathVariable("id") Long id) {
-        return planetService.findById(id).map(planet -> ResponseEntity.ok(planet))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
+  @GetMapping("/name/{name}")
+  public ResponseEntity<Planet> getByName(@PathVariable("name") String name) {
+    return planetService.getByName(name).map(planet -> ResponseEntity.ok(planet))
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
 
-    @GetMapping("/name/{name}")
-    public ResponseEntity<Planet> findByName(@PathVariable("name") String nome) {
-        return planetService.findByName(nome).map(planet -> ResponseEntity.ok(planet))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
+  @GetMapping
+  public ResponseEntity<List<Planet>> list(@RequestParam(required = false) String terrain,
+      @RequestParam(required = false) String climate) {
+    List<Planet> planets = planetService.list(terrain, climate);
+    return ResponseEntity.ok(planets);
+  }
 
-    @GetMapping
-    public ResponseEntity<List<Planet>> findAll(@RequestParam(required = false) String terrain,
-            @RequestParam(required = false) String climate) {
-        List<Planet> planets = planetService.findAll(terrain, climate);
-        return ResponseEntity.ok(planets);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remove(@PathVariable("id") Long id) {
-        planetService.remove(id);
-        return ResponseEntity.noContent().build();
-    }
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> remove(@PathVariable("id") Long id) {
+    planetService.remove(id);
+    return ResponseEntity.noContent().build();
+  }
 }

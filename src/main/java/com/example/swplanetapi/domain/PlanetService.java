@@ -8,30 +8,30 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PlanetService {
-    private PlanetRepository planetRepository;
+  private PlanetRepository planetRepository;
 
-    public PlanetService(PlanetRepository planetRepository) {
-        this.planetRepository = planetRepository;
-    }
+  public PlanetService(PlanetRepository planetRepository) {
+    this.planetRepository = planetRepository;
+  }
 
-    public Planet create(Planet planet) {
-        return planetRepository.save(planet);
-    }
+  public Planet create(Planet planet) {
+    return planetRepository.save(planet);
+  }
 
-    public Optional<Planet> findById(Long id) {
-        return planetRepository.findById(id);
-    }
+  public Optional<Planet> get(Long id) {
+    return planetRepository.findById(id);
+  }
 
-    public Optional<Planet> findByName(String nome) {
-        return planetRepository.findByName(nome);
-    }
+  public Optional<Planet> getByName(String name) {
+    return planetRepository.findByName(name);
+  }
 
-    public List<Planet> findAll(String terrain, String climate) {
-        Example<Planet> query = QueryBuilder.makeQuery(new Planet(climate, terrain));
-        return planetRepository.findAll(query);
-    }
+  public List<Planet> list(String terrain, String climate) {
+    Example<Planet> query = QueryBuilder.makeQuery(new Planet(climate, terrain));
+    return planetRepository.findAll(query);
+  }
 
-    public void remove(Long id) {
-        planetRepository.deleteById(id);
-    }
+  public void remove(Long id) {
+    planetRepository.deleteById(id);
+  }
 }
